@@ -1,3 +1,4 @@
+#include <vector>
 #include "recorder.hpp"
 #include <sstream>
 #include <CCGL.h>
