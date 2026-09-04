@@ -209,7 +209,7 @@ void MyRenderTexture::capture(std::mutex& lock, std::vector<u8>& data, volatile 
     scene->visit();
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-       lock.lock();
+          lock.lock();
     lul = true;
 
     // Fixed chunked readback to prevent 8K black screen allocation limits
@@ -231,6 +231,7 @@ void MyRenderTexture::capture(std::mutex& lock, std::vector<u8>& data, volatile 
     }
 
     lock.unlock();
+
 
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_old_fbo);
