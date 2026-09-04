@@ -208,10 +208,29 @@ void MyRenderTexture::capture(std::mutex& lock, std::vector<u8>& data, volatile 
     scene->visit();
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    lock.lock();
+       lock.lock();
     lul = true;
-    glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
+
+    // Fixed chunked readback to prevent 8K black screen allocation limits
+    const int STRIPS = 4;
+    int stripHeight = m_height / STRIPS;
+    int remainderHeight = m_height % STRIPS;
+
+    for (int i = 0; i < STRIPS; i++) {
+        int yOffset = i * stripHeight;
+        int currentStripHeight = stripHeight;
+        
+        // Handle uneven division if height isn't perfectly divisible by 4
+        if (i == STRIPS - 1) {
+            currentStripHeight += remainderHeight;
+        }
+
+        size_t bufferOffset = static_cast<size_t>(yOffset) * m_width * 3;
+        glReadPixels(0, yOffset, m_width, currentStripHeight, GL_RGB, GL_UNSIGNED_BYTE, data.data() + bufferOffset);
+    }
+
     lock.unlock();
+
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_old_fbo);
     director->setViewport();
